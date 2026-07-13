@@ -247,6 +247,21 @@
       <img id="qrImg" src="" width="180" height="180" alt="QR Code" />
     </div>
     <p class="hint" id="successHint">แสดงรหัสหรือ QR นี้ให้พนักงานที่บูธ เพื่อรับ Sample ฟรี</p>
+
+    <div class="member-card" id="campaignBox" style="display:none;text-align:left;">
+      <div class="title">📅 กิจกรรมในช่วงนี้</div>
+      <div id="campaignList"></div>
+    </div>
+
+    <div class="member-card" style="text-align:left;">
+      <div class="title">🧾 ส่งบิลลุ้นรางวัล</div>
+      <p style="font-size:12.5px;color:var(--gray);margin:6px 0 10px;line-height:1.5;">
+        ถ่ายรูปบิล/ใบเสร็จการซื้อสินค้า (ในงานหรือนอกงานก็ได้) 1 ใบ = 1 สิทธิ์ลุ้นรางวัล
+      </p>
+      <input type="file" id="receiptFile" accept="image/*" style="font-size:13px;width:100%;" />
+      <button type="button" id="receiptBtn" style="margin-top:10px;">ส่งบิลลุ้นรางวัล</button>
+      <div id="receiptStatus" class="hint" style="margin-top:8px;"></div>
+    </div>
   </div>
 </div>
 
@@ -258,10 +273,16 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbyCcfCV0ol0ake6TCnCOSg_
 // รายการ Sample (SKU) — แก้ชื่อ/จุดเด่นให้ตรงสินค้าจริงได้เลย
 // pet: 'สุนัข' | 'แมว' | 'all' (แสดงเฉพาะเมื่อลูกค้าเลือกประเภทสัตว์เลี้ยงตรงกัน)
 const SAMPLES = [
-  { sku: 'KF-DOG-CHK', name: 'สูตรไก่ สำหรับสุนัข',    pet: 'สุนัข', desc: 'โปรตีนสูง ย่อยง่าย เหมาะกับสุนัขทุกช่วงวัย' },
-  { sku: 'KF-DOG-SLM', name: 'สูตรแซลมอน สำหรับสุนัข', pet: 'สุนัข', desc: 'โอเมก้า 3 บำรุงขนและผิวหนัง ลดขนร่วง' },
-  { sku: 'KF-CAT-CHK', name: 'สูตรไก่ สำหรับแมว',      pet: 'แมว',  desc: 'โปรตีนสูง ไม่ใส่สี ไม่แต่งกลิ่น อร่อยถูกใจแมว' },
-  { sku: 'KF-CAT-TNA', name: 'สูตรทูน่า สำหรับแมว',    pet: 'แมว',  desc: 'ทูน่าแท้ บำรุงขน ลดปัญหาก้อนขน' }
+  // สายแมว — GRAIN FREE / SPECIAL CARE
+  { sku: 'BC15', name: 'Beauty Cat (ทุกช่วงวัย)',          pet: 'แมว',  desc: 'บำรุงเส้นขนแน่นนุ่มเงางาม โครงสร้างตัวแน่น ต้านอนุมูลอิสระ เสริมภูมิคุ้มกัน' },
+  { sku: 'AC15', name: 'Adult Cat (1 ปีขึ้นไป)',           pet: 'แมว',  desc: 'ย่อยง่าย ดูดซึมดี ดูแลตับไต เม็ดสามเหลี่ยมช่วยขัดฟัน ลดกลิ่นมูล' },
+  { sku: 'KC15', name: 'Kitten ลูกแมว (3 เดือนขึ้นไป)',    pet: 'แมว',  desc: 'เสริมสร้างร่างกายและภูมิคุ้มกันลูกแมวหย่านมและแม่แมว ปรับสมดุลลำไส้ ลดถ่ายเหลว' },
+  { sku: 'UC15', name: 'Urinary Care ดูแลทางเดินปัสสาวะ', pet: 'แมว',  desc: 'ผสมสมุนไพรจีน ปรับสมดุล pH ปัสสาวะ ลดความเสี่ยงการเกิดนิ่วในแมวโต' },
+  // สายสุนัข — NATURE GOURMET
+  { sku: 'BD15', name: 'Beauty Dog พันธุ์เล็ก (ทุกช่วงวัย)',   pet: 'สุนัข', desc: 'บำรุงลึกถึงรากขนและผิวหนัง ลดการอักเสบของผิว ขนหนานุ่มแข็งแรง' },
+  { sku: 'AD15', name: 'Adult Dog พันธุ์เล็ก (1 ปีขึ้นไป)',    pet: 'สุนัข', desc: 'ย่อยง่าย เหมาะกับพันธุ์เล็ก เม็ดช่วยขัดฟัน ชะลอคราบหินปูน' },
+  { sku: 'PD15', name: 'Puppy ลูกสุนัขพันธุ์เล็ก (3 เดือนขึ้นไป)', pet: 'สุนัข', desc: 'เม็ดเล็ก เคี้ยวง่าย ย่อยง่าย เสริมพัฒนาการสมองและระบบประสาท' },
+  { sku: 'BD10', name: 'Beauty Dog พันธุ์กลาง-ใหญ่ (ทุกช่วงวัย)', pet: 'สุนัข', desc: 'บำรุงขนและผิวหนัง เสริมความแข็งแรงของรากขนและร่างกาย' }
 ];
 // ==========================================
 
@@ -315,7 +336,7 @@ async function main() {
     document.getElementById('loading').style.display = 'none';
 
     if (data.registered) {
-      showSuccess(data.memberId, data.redeemStatus, data.sampleSku);
+      showSuccess(data.memberId, data.redeemStatus, data.sampleSku, data.receiptCount);
     } else {
       document.getElementById('formCard').style.display = 'block';
       renderSamples();
@@ -327,10 +348,88 @@ async function main() {
   }
 }
 
-function showSuccess(memberId, redeemed, sampleSku) {
+async function loadCampaigns() {
+  try {
+    const res = await fetch(GAS_URL + '?action=campaigns');
+    const data = await res.json();
+    if (!data.campaigns || !data.campaigns.length) return;
+    const box = document.getElementById('campaignBox');
+    const list = document.getElementById('campaignList');
+    list.innerHTML = '';
+    data.campaigns.forEach(c => {
+      const div = document.createElement('div');
+      div.style.cssText = 'margin-top:8px;padding:10px;background:#fffaf5;border-radius:10px;';
+      const period = (c.start || c.end) ? `<div style="font-size:11px;color:#b06a00;margin-top:4px;">📆 ${c.start || ''} - ${c.end || 'ไม่จำกัด'}</div>` : '';
+      div.innerHTML = `<div style="font-size:13.5px;font-weight:700;">${c.name}</div>` +
+        `<div style="font-size:12.5px;color:var(--gray);margin-top:2px;line-height:1.5;">${c.detail}</div>` + period;
+      list.appendChild(div);
+    });
+    box.style.display = 'block';
+  } catch (err) { console.error(err); }
+}
+
+function updateReceiptStatus(count) {
+  document.getElementById('receiptStatus').textContent =
+    count > 0 ? `✓ ส่งบิลแล้ว ${count} ใบ = ${count} สิทธิ์ลุ้นรางวัล` : '';
+}
+
+function resizeImageToBase64(file, maxDim) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+document.getElementById('receiptBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('receiptFile');
+  const statusBox = document.getElementById('receiptStatus');
+  const btn = document.getElementById('receiptBtn');
+  if (!fileInput.files.length) {
+    statusBox.textContent = 'กรุณาเลือกรูปบิล/ใบเสร็จก่อน';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'กำลังส่ง...';
+  try {
+    const imageBase64 = await resizeImageToBase64(fileInput.files[0], 1280);
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'submitReceipt', lineUserId: profile.userId, imageBase64: imageBase64, mimeType: 'image/jpeg' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      fileInput.value = '';
+      updateReceiptStatus(data.count);
+    } else {
+      statusBox.textContent = 'ส่งไม่สำเร็จ กรุณาลองใหม่';
+    }
+  } catch (err) {
+    statusBox.textContent = 'ส่งไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ส่งบิลลุ้นรางวัล';
+  }
+});
+
+function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
   document.getElementById('formCard').style.display = 'none';
   document.getElementById('successCard').style.display = 'block';
   document.getElementById('memberIdText').textContent = memberId;
+  loadCampaigns();
+  updateReceiptStatus(receiptCount || 0);
 
   const entitle = document.getElementById('sampleEntitle');
   const chosen = sampleSku ? skuLabel(sampleSku) : '';
