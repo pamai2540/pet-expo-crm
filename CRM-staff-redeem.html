@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แลกของรางวัล - หน้าพนักงาน</title>
+<style>
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
+    background:#fff8f0;
+  }
+  .wrap{max-width:420px;margin:0 auto;padding:24px 16px;}
+  h1{font-size:19px;text-align:center;margin-bottom:4px;}
+  p.sub{text-align:center;color:#888;font-size:13px;margin-top:0;}
+  .card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  input{
+    width:100%;
+    padding:14px;
+    font-size:18px;
+    border:1px solid #eee0d0;
+    border-radius:10px;
+    text-transform:uppercase;
+  }
+  button{
+    width:100%;
+    padding:14px;
+    background:#ff7a00;
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:700;
+    margin-top:10px;
+    cursor:pointer;
+  }
+  button.redeem{background:#1a8a3a;}
+  button:disabled{background:#ccc;}
+  .result{margin-top:18px;padding:14px;border-radius:12px;font-size:14px;line-height:1.6;display:none;}
+  .result.ok{background:#e8f7ec;color:#1a8a3a;}
+  .result.warn{background:#fff3e6;color:#a35b00;}
+  .result.err{background:#fde8e8;color:#c0392b;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎁 แลกของรางวัล Pet Expo</h1>
+  <p class="sub">สำหรับพนักงานหน้าบูธเท่านั้น</p>
+
+  <div class="card">
+    <label style="font-size:13px;font-weight:600;">รหัสสมาชิก (Member ID)</label>
+    <input type="text" id="memberId" placeholder="เช่น KF26-0001" />
+    <button id="lookupBtn">ค้นหาสมาชิก</button>
+
+    <div id="resultBox" class="result"></div>
+    <button id="redeemBtn" class="redeem" style="display:none;">ยืนยันแลกของรางวัล</button>
+  </div>
+</div>
+
+<script>
+// ============= ตั้งค่าตรงนี้ =============
+const GAS_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL'; // แก้เป็น URL เดียวกับที่ใช้ในฟอร์ม LIFF
+const STAFF_PIN = '1234'; // ตั้งรหัสผ่านให้พนักงานหน้าบูธ (ป้องกันคนนอกเข้ามากดแลกของรางวัลเอง)
+// ==========================================
+
+// ป้องกันเบื้องต้นด้วย PIN (ไม่ใช่ระบบความปลอดภัยระดับสูง แค่กันคนนอกกดมั่ว)
+(function gate() {
+  const entered = prompt('กรอกรหัส PIN สำหรับพนักงาน');
+  if (entered !== STAFF_PIN) {
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif;">รหัสไม่ถูกต้อง กรุณาโหลดหน้านี้ใหม่</div>';
+    throw new Error('unauthorized');
+  }
+})();
+
+const memberIdInput = document.getElementById('memberId');
+const resultBox = document.getElementById('resultBox');
+const redeemBtn = document.getElementById('redeemBtn');
+let currentMemberId = '';
+
+function showResult(cls, html) {
+  resultBox.className = 'result ' + cls;
+  resultBox.innerHTML = html;
+  resultBox.style.display = 'block';
+}
+
+document.getElementById('lookupBtn').addEventListener('click', async () => {
+  const id = memberIdInput.value.trim().toUpperCase();
+  if (!id) return;
+  redeemBtn.style.display = 'none';
+  showResult('warn', 'กำลังค้นหา...');
+
+  try {
+    const res = await fetch(GAS_URL + '?action=lookup&memberId=' + encodeURIComponent(id));
+    const data = await res.json();
+
+    if (!data.found) {
+      showResult('err', 'ไม่พบสมาชิกรหัสนี้ กรุณาตรวจสอบรหัสอีกครั้ง');
+      return;
+    }
+
+    currentMemberId = data.memberId;
+
+    if (data.redeemStatus) {
+      showResult('warn', `<b>${data.fullName}</b> (${data.petType})<br>สมาชิกนี้แลกของรางวัลไปแล้ว`);
+    } else {
+      showResult('ok', `<b>${data.fullName}</b> (${data.petType})<br>ยังไม่เคยแลกของรางวัล`);
+      redeemBtn.style.display = 'block';
+    }
+  } catch (err) {
+    showResult('err', 'เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่');
+    console.error(err);
+  }
+});
+
+redeemBtn.addEventListener('click', async () => {
+  redeemBtn.disabled = true;
+  redeemBtn.textContent = 'กำลังบันทึก...';
+
+  try {
+    const res = await fetch(GAS_URL + '?action=redeem&memberId=' + encodeURIComponent(currentMemberId));
+    const data = await res.json();
+
+    if (data.success) {
+      showResult('ok', '✓ ' + data.message);
+      redeemBtn.style.display = 'none';
+    } else {
+      showResult('warn', data.message);
+      redeemBtn.style.display = 'none';
+    }
+  } catch (err) {
+    showResult('err', 'เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่');
+    console.error(err);
+  } finally {
+    redeemBtn.disabled = false;
+    redeemBtn.textContent = 'ยืนยันแลกของรางวัล';
+  }
+});
+
+memberIdInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('lookupBtn').click();
+});
+</script>
+</body>
+</html>
