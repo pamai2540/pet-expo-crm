@@ -101,10 +101,12 @@ document.getElementById('lookupBtn').addEventListener('click', async () => {
 
     currentMemberId = data.memberId;
 
+    const skuLine = data.sampleSku ? `<br>Sample ที่เลือก: <b style="font-size:16px;">${data.sampleSku}</b>` : '';
+
     if (data.redeemStatus) {
-      showResult('warn', `<b>${data.fullName}</b> (${data.petType})<br>สมาชิกนี้รับ Sample ไปแล้ว`);
+      showResult('warn', `<b>${data.fullName}</b> (${data.petType})<br>สมาชิกนี้รับ Sample ไปแล้ว${skuLine}`);
     } else {
-      showResult('ok', `<b>${data.fullName}</b> (${data.petType})<br>มีสิทธิ์รับ Sample 1 ครั้ง — ยังไม่ได้ใช้สิทธิ์`);
+      showResult('ok', `<b>${data.fullName}</b> (${data.petType})<br>มีสิทธิ์รับ Sample 1 ครั้ง — ยังไม่ได้ใช้สิทธิ์${skuLine}`);
       redeemBtn.style.display = 'block';
     }
   } catch (err) {

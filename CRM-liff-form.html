@@ -122,6 +122,35 @@
   }
   .entitle.avail .count{background:#1a8a3a;color:#fff;}
   .entitle.used .count{background:#c9c9c9;color:#fff;}
+  .sample-list{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+  .sample-card{
+    display:block;
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    padding:12px;
+    background:#fffaf5;
+    cursor:pointer;
+  }
+  .sample-card input{display:none;}
+  .sample-card .sku-name{font-size:14px;font-weight:700;}
+  .sample-card .sku-tag{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    color:var(--brand-dark);
+    background:#ffe9d4;
+    border-radius:20px;
+    padding:2px 8px;
+    margin-left:6px;
+    vertical-align:middle;
+  }
+  .sample-card .sku-desc{font-size:12.5px;color:var(--gray);margin-top:4px;line-height:1.5;}
+  .sample-card.selected{
+    border-color:var(--brand);
+    background:#fff3e6;
+    box-shadow:0 0 0 2px rgba(255,122,0,.15);
+  }
+  .sample-chosen{font-size:13px;color:var(--brand-dark);font-weight:600;margin-top:8px;}
 </style>
 </head>
 <body>
@@ -174,6 +203,9 @@
       <label>ปัจจุบันให้อาหารแบรนด์อะไร <span class="opt">(ไม่บังคับ)</span></label>
       <input type="text" id="currentBrand" placeholder="เช่น Royal Canin, ยังไม่แน่ใจ" />
 
+      <label>เลือก Sample ที่ต้องการรับ (ฟรี 1 ชิ้น)</label>
+      <div id="sampleList" class="sample-list"></div>
+
       <label>ซื้ออาหารสัตว์เลี้ยงส่วนใหญ่จากช่องทางไหน</label>
       <select id="purchaseChannel">
         <option value="ร้านค้าทั่วไป/ร้านขายอาหารสัตว์">ร้านค้าทั่วไป / ร้านขายอาหารสัตว์</option>
@@ -222,9 +254,48 @@
 // ============= ตั้งค่าตรงนี้ =============
 const LIFF_ID = '2010692180-fwE1YuAv';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyCcfCV0ol0ake6TCnCOSg_veEG3-Aq6MXxYgCexbntpOlww5cOPiBbX2jFjTajuB_n/exec';
+
+// รายการ Sample (SKU) — แก้ชื่อ/จุดเด่นให้ตรงสินค้าจริงได้เลย
+// pet: 'สุนัข' | 'แมว' | 'all' (แสดงเฉพาะเมื่อลูกค้าเลือกประเภทสัตว์เลี้ยงตรงกัน)
+const SAMPLES = [
+  { sku: 'KF-DOG-CHK', name: 'สูตรไก่ สำหรับสุนัข',    pet: 'สุนัข', desc: 'โปรตีนสูง ย่อยง่าย เหมาะกับสุนัขทุกช่วงวัย' },
+  { sku: 'KF-DOG-SLM', name: 'สูตรแซลมอน สำหรับสุนัข', pet: 'สุนัข', desc: 'โอเมก้า 3 บำรุงขนและผิวหนัง ลดขนร่วง' },
+  { sku: 'KF-CAT-CHK', name: 'สูตรไก่ สำหรับแมว',      pet: 'แมว',  desc: 'โปรตีนสูง ไม่ใส่สี ไม่แต่งกลิ่น อร่อยถูกใจแมว' },
+  { sku: 'KF-CAT-TNA', name: 'สูตรทูน่า สำหรับแมว',    pet: 'แมว',  desc: 'ทูน่าแท้ บำรุงขน ลดปัญหาก้อนขน' }
+];
 // ==========================================
 
 let profile = null;
+let selectedSku = '';
+
+function skuLabel(sku) {
+  const s = SAMPLES.find(x => x.sku === sku);
+  return s ? s.name : sku;
+}
+
+function renderSamples() {
+  const petType = document.getElementById('petType').value;
+  const list = document.getElementById('sampleList');
+  const items = SAMPLES.filter(s => s.pet === 'all' || s.pet === petType);
+  const visible = items.length ? items : SAMPLES; // ประเภท "อื่นๆ" หรือไม่มีรายการตรง → แสดงทั้งหมด
+
+  list.innerHTML = '';
+  if (!visible.some(s => s.sku === selectedSku)) selectedSku = '';
+
+  visible.forEach(s => {
+    const label = document.createElement('label');
+    label.className = 'sample-card' + (s.sku === selectedSku ? ' selected' : '');
+    label.innerHTML =
+      `<input type="radio" name="sampleSku" value="${s.sku}" ${s.sku === selectedSku ? 'checked' : ''}/>` +
+      `<span class="sku-name">${s.name}</span><span class="sku-tag">สำหรับ${s.pet === 'all' ? 'ทุกตัว' : s.pet}</span>` +
+      `<div class="sku-desc">${s.desc}</div>`;
+    label.addEventListener('click', () => {
+      selectedSku = s.sku;
+      renderSamples();
+    });
+    list.appendChild(label);
+  });
+}
 
 async function main() {
   try {
@@ -244,9 +315,11 @@ async function main() {
     document.getElementById('loading').style.display = 'none';
 
     if (data.registered) {
-      showSuccess(data.memberId, data.redeemStatus);
+      showSuccess(data.memberId, data.redeemStatus, data.sampleSku);
     } else {
       document.getElementById('formCard').style.display = 'block';
+      renderSamples();
+      document.getElementById('petType').addEventListener('change', renderSamples);
     }
   } catch (err) {
     document.getElementById('loading').textContent = 'เกิดข้อผิดพลาด: กรุณาเปิดลิงก์นี้ผ่านแอป LINE';
@@ -254,21 +327,25 @@ async function main() {
   }
 }
 
-function showSuccess(memberId, redeemed) {
+function showSuccess(memberId, redeemed, sampleSku) {
   document.getElementById('formCard').style.display = 'none';
   document.getElementById('successCard').style.display = 'block';
   document.getElementById('memberIdText').textContent = memberId;
 
   const entitle = document.getElementById('sampleEntitle');
+  const chosen = sampleSku ? skuLabel(sampleSku) : '';
   if (redeemed) {
     entitle.className = 'entitle used';
-    document.getElementById('sampleEntitleText').textContent = '✓ รับ Sample ไปแล้ว';
+    document.getElementById('sampleEntitleText').textContent =
+      '✓ รับ Sample ไปแล้ว' + (chosen ? ' — ' + chosen : '');
     document.getElementById('sampleEntitleCount').textContent = 'ใช้สิทธิ์แล้ว';
     document.getElementById('qrBox').style.display = 'none';
     document.getElementById('successHint').textContent =
       'คุณใช้สิทธิ์รับ Sample ในงานนี้ไปแล้ว — ขอบคุณที่ร่วมกิจกรรม แล้วพบกันงานหน้า!';
   } else {
     entitle.className = 'entitle avail';
+    document.getElementById('sampleEntitleText').textContent =
+      '🎁 รับ Sample ฟรี' + (chosen ? ': ' + chosen : '');
     document.getElementById('qrImg').src =
       'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(memberId);
   }
@@ -279,6 +356,12 @@ document.getElementById('regForm').addEventListener('submit', async function (e)
   const btn = document.getElementById('submitBtn');
   const errBox = document.getElementById('errMsg');
   errBox.style.display = 'none';
+
+  if (!selectedSku) {
+    errBox.textContent = 'กรุณาเลือก Sample ที่ต้องการรับ';
+    errBox.style.display = 'block';
+    return;
+  }
 
   if (!document.getElementById('pdpaConsent').checked) {
     errBox.textContent = 'กรุณายินยอมให้เก็บข้อมูลส่วนบุคคล (PDPA) ก่อนลงทะเบียน';
@@ -298,7 +381,8 @@ document.getElementById('regForm').addEventListener('submit', async function (e)
     currentBrand: document.getElementById('currentBrand').value.trim(),
     purchaseChannel: document.getElementById('purchaseChannel').value,
     pdpaConsent: document.getElementById('pdpaConsent').checked,
-    marketingConsent: document.getElementById('marketingConsent').checked
+    marketingConsent: document.getElementById('marketingConsent').checked,
+    sampleSku: selectedSku
   };
 
   btn.disabled = true;
@@ -314,7 +398,7 @@ document.getElementById('regForm').addEventListener('submit', async function (e)
     const data = await res.json();
 
     if (data.success) {
-      showSuccess(data.memberId, false);
+      showSuccess(data.memberId, false, selectedSku);
     } else {
       errBox.textContent = 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
       errBox.style.display = 'block';
