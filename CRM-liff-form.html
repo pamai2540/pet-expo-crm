@@ -151,6 +151,20 @@
     box-shadow:0 0 0 2px rgba(255,122,0,.15);
   }
   .sample-chosen{font-size:13px;color:var(--brand-dark);font-weight:600;margin-top:8px;}
+  .upload-area{
+    display:block;
+    border:2px dashed var(--brand);
+    border-radius:12px;
+    padding:18px 12px;
+    text-align:center;
+    color:var(--brand-dark);
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+    background:#fffaf5;
+  }
+  .upload-area span{display:block;font-weight:400;font-size:12px;color:var(--gray);margin-top:4px;}
+  .upload-area.has-files{border-style:solid;background:#fff3e6;}
 </style>
 </head>
 <body>
@@ -241,6 +255,12 @@
         <span id="sampleEntitleText">🎁 รับ Sample ฟรี</span>
         <span class="count" id="sampleEntitleCount">1 สิทธิ์</span>
       </div>
+      <button type="button" id="selfRedeemBtn" style="display:none;background:#1a8a3a;margin-top:12px;">
+        ✅ กดยืนยันรับ Sample แล้ว
+      </button>
+      <p class="hint" id="selfRedeemHint" style="display:none;margin-top:6px;">
+        ⚠️ กดได้ครั้งเดียว — ให้กดตอนรับ Sample จากพนักงานที่บูธเท่านั้น
+      </p>
     </div>
 
     <div class="qr" id="qrBox">
@@ -258,8 +278,13 @@
       <p style="font-size:12.5px;color:var(--gray);margin:6px 0 10px;line-height:1.5;">
         ถ่ายรูปบิล/ใบเสร็จการซื้อสินค้า (ในงานหรือนอกงานก็ได้) 1 ใบ = 1 สิทธิ์ลุ้นรางวัล
       </p>
-      <input type="file" id="receiptFile" accept="image/*" style="font-size:13px;width:100%;" />
-      <button type="button" id="receiptBtn" style="margin-top:10px;">ส่งบิลลุ้นรางวัล</button>
+      <label for="receiptFile" class="upload-area">
+        📷 กดที่นี่เพื่อถ่ายรูป/แนบใบเสร็จ
+        <span>เลือกได้หลายใบพร้อมกัน</span>
+      </label>
+      <input type="file" id="receiptFile" accept="image/*" multiple style="display:none;" />
+      <div id="receiptFileInfo" class="hint" style="margin-top:8px;display:none;"></div>
+      <button type="button" id="receiptBtn" style="margin-top:10px;display:none;">ส่งบิลลุ้นรางวัล</button>
       <div id="receiptStatus" class="hint" style="margin-top:8px;"></div>
     </div>
   </div>
@@ -391,32 +416,58 @@ function resizeImageToBase64(file, maxDim) {
   });
 }
 
+document.getElementById('receiptFile').addEventListener('change', () => {
+  const files = document.getElementById('receiptFile').files;
+  const info = document.getElementById('receiptFileInfo');
+  const btn = document.getElementById('receiptBtn');
+  const area = document.querySelector('.upload-area');
+  if (files.length) {
+    info.textContent = `เลือกแล้ว ${files.length} รูป — กดปุ่ม "ส่งบิลลุ้นรางวัล" ด้านล่างเพื่อยืนยัน`;
+    info.style.display = 'block';
+    btn.style.display = 'block';
+    btn.textContent = `ส่งบิลลุ้นรางวัล (${files.length} ใบ)`;
+    area.classList.add('has-files');
+  } else {
+    info.style.display = 'none';
+    btn.style.display = 'none';
+    area.classList.remove('has-files');
+  }
+});
+
 document.getElementById('receiptBtn').addEventListener('click', async () => {
   const fileInput = document.getElementById('receiptFile');
   const statusBox = document.getElementById('receiptStatus');
   const btn = document.getElementById('receiptBtn');
-  if (!fileInput.files.length) {
+  const files = Array.from(fileInput.files);
+  if (!files.length) {
     statusBox.textContent = 'กรุณาเลือกรูปบิล/ใบเสร็จก่อน';
     return;
   }
   btn.disabled = true;
-  btn.textContent = 'กำลังส่ง...';
+  let lastCount = 0, sent = 0;
   try {
-    const imageBase64 = await resizeImageToBase64(fileInput.files[0], 1280);
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'submitReceipt', lineUserId: profile.userId, imageBase64: imageBase64, mimeType: 'image/jpeg' })
-    });
-    const data = await res.json();
-    if (data.success) {
-      fileInput.value = '';
-      updateReceiptStatus(data.count);
-    } else {
-      statusBox.textContent = 'ส่งไม่สำเร็จ กรุณาลองใหม่';
+    for (let i = 0; i < files.length; i++) {
+      btn.textContent = `กำลังส่ง ${i + 1}/${files.length}...`;
+      const imageBase64 = await resizeImageToBase64(files[i], 1280);
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'submitReceipt', lineUserId: profile.userId, imageBase64: imageBase64, mimeType: 'image/jpeg' })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'submit failed');
+      lastCount = data.count;
+      sent++;
     }
+    fileInput.value = '';
+    document.getElementById('receiptFileInfo').style.display = 'none';
+    document.querySelector('.upload-area').classList.remove('has-files');
+    btn.style.display = 'none';
+    updateReceiptStatus(lastCount);
   } catch (err) {
-    statusBox.textContent = 'ส่งไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
+    statusBox.textContent = sent > 0
+      ? `ส่งสำเร็จ ${sent} ใบ แต่บางใบไม่สำเร็จ กรุณาเลือกใบที่เหลือแล้วส่งใหม่`
+      : 'ส่งไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
     console.error(err);
   } finally {
     btn.disabled = false;
@@ -424,10 +475,38 @@ document.getElementById('receiptBtn').addEventListener('click', async () => {
   }
 });
 
+let gMemberId = '', gSampleSku = '', gReceiptCount = 0;
+
+document.getElementById('selfRedeemBtn').addEventListener('click', async () => {
+  if (!confirm('ยืนยันว่าได้รับ Sample จากพนักงานแล้วใช่ไหม?\n\n⚠️ กดยืนยันได้ครั้งเดียวเท่านั้น สิทธิ์จะถูกใช้ทันที')) return;
+  const btn = document.getElementById('selfRedeemBtn');
+  btn.disabled = true;
+  btn.textContent = 'กำลังยืนยัน...';
+  try {
+    const res = await fetch(GAS_URL + '?action=selfRedeem&uid=' + encodeURIComponent(profile.userId));
+    const data = await res.json();
+    if (data.success) {
+      showSuccess(gMemberId, true, gSampleSku, gReceiptCount);
+    } else {
+      alert(data.message || 'ไม่สำเร็จ กรุณาลองใหม่');
+      btn.disabled = false;
+      btn.textContent = '✅ กดยืนยันรับ Sample แล้ว';
+    }
+  } catch (err) {
+    alert('เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่');
+    btn.disabled = false;
+    btn.textContent = '✅ กดยืนยันรับ Sample แล้ว';
+    console.error(err);
+  }
+});
+
 function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
   document.getElementById('formCard').style.display = 'none';
   document.getElementById('successCard').style.display = 'block';
   document.getElementById('memberIdText').textContent = memberId;
+  gMemberId = memberId;
+  gSampleSku = sampleSku || '';
+  gReceiptCount = receiptCount || 0;
   loadCampaigns();
   updateReceiptStatus(receiptCount || 0);
 
@@ -438,6 +517,8 @@ function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
     document.getElementById('sampleEntitleText').textContent =
       '✓ รับ Sample ไปแล้ว' + (chosen ? ' — ' + chosen : '');
     document.getElementById('sampleEntitleCount').textContent = 'ใช้สิทธิ์แล้ว';
+    document.getElementById('selfRedeemBtn').style.display = 'none';
+    document.getElementById('selfRedeemHint').style.display = 'none';
     document.getElementById('qrBox').style.display = 'none';
     document.getElementById('successHint').textContent =
       'คุณใช้สิทธิ์รับ Sample ในงานนี้ไปแล้ว — ขอบคุณที่ร่วมกิจกรรม แล้วพบกันงานหน้า!';
@@ -445,6 +526,8 @@ function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
     entitle.className = 'entitle avail';
     document.getElementById('sampleEntitleText').textContent =
       '🎁 รับ Sample ฟรี' + (chosen ? ': ' + chosen : '');
+    document.getElementById('selfRedeemBtn').style.display = 'block';
+    document.getElementById('selfRedeemHint').style.display = 'block';
     document.getElementById('qrImg').src =
       'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(memberId);
   }
