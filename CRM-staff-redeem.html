@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>แลกของรางวัล - หน้าพนักงาน</title>
+<title>จ่าย Sample - หน้าพนักงาน</title>
 <style>
   *{box-sizing:border-box;}
   body{
@@ -45,7 +45,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>🎁 แลกของรางวัล Pet Expo</h1>
+  <h1>🎁 จ่าย Sample Pet Expo</h1>
   <p class="sub">สำหรับพนักงานหน้าบูธเท่านั้น</p>
 
   <div class="card">
@@ -54,7 +54,7 @@
     <button id="lookupBtn">ค้นหาสมาชิก</button>
 
     <div id="resultBox" class="result"></div>
-    <button id="redeemBtn" class="redeem" style="display:none;">ยืนยันแลกของรางวัล</button>
+    <button id="redeemBtn" class="redeem" style="display:none;">ยืนยันจ่าย Sample</button>
   </div>
 </div>
 
@@ -102,9 +102,9 @@ document.getElementById('lookupBtn').addEventListener('click', async () => {
     currentMemberId = data.memberId;
 
     if (data.redeemStatus) {
-      showResult('warn', `<b>${data.fullName}</b> (${data.petType})<br>สมาชิกนี้แลกของรางวัลไปแล้ว`);
+      showResult('warn', `<b>${data.fullName}</b> (${data.petType})<br>สมาชิกนี้รับ Sample ไปแล้ว`);
     } else {
-      showResult('ok', `<b>${data.fullName}</b> (${data.petType})<br>ยังไม่เคยแลกของรางวัล`);
+      showResult('ok', `<b>${data.fullName}</b> (${data.petType})<br>มีสิทธิ์รับ Sample 1 ครั้ง — ยังไม่ได้ใช้สิทธิ์`);
       redeemBtn.style.display = 'block';
     }
   } catch (err) {
@@ -133,7 +133,7 @@ redeemBtn.addEventListener('click', async () => {
     console.error(err);
   } finally {
     redeemBtn.disabled = false;
-    redeemBtn.textContent = 'ยืนยันแลกของรางวัล';
+    redeemBtn.textContent = 'ยืนยันจ่าย Sample';
   }
 });
 

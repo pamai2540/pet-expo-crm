@@ -91,6 +91,37 @@
     border-radius:20px;
     margin-top:6px;
   }
+  .member-card{
+    background:linear-gradient(135deg,#fff4e8,#fff);
+    border:1.5px solid var(--brand);
+    border-radius:14px;
+    padding:14px;
+    margin-top:14px;
+  }
+  .member-card .title{font-size:13px;font-weight:700;color:var(--brand-dark);}
+  .entitle{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-top:10px;
+    padding:12px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:700;
+    text-align:left;
+  }
+  .entitle.avail{background:#e8f7ec;color:#1a8a3a;}
+  .entitle.used{background:#f2f2f2;color:#9a9a9a;}
+  .entitle .count{
+    font-size:12px;
+    font-weight:800;
+    padding:4px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .entitle.avail .count{background:#1a8a3a;color:#fff;}
+  .entitle.used .count{background:#c9c9c9;color:#fff;}
 </style>
 </head>
 <body>
@@ -98,7 +129,7 @@
 <div class="wrap">
   <div class="header">
     <h1>🐾 สมัครสมาชิก Pet Expo</h1>
-    <p>กรอกข้อมูลง่ายๆ รับสิทธิ์แลกของรางวัลในงาน</p>
+    <p>สมัครสมาชิกฟรี รับสิทธิ์ Sample ฟรี 1 ครั้งในงาน</p>
   </div>
 
   <div id="loading" class="loading">กำลังเชื่อมต่อ LINE...</div>
@@ -163,18 +194,27 @@
       </div>
 
       <div id="errMsg" class="err"></div>
-      <button type="submit" id="submitBtn">ลงทะเบียนรับของรางวัล</button>
+      <button type="submit" id="submitBtn">สมัครสมาชิก รับสิทธิ์ Sample ฟรี</button>
     </form>
   </div>
 
   <div id="successCard" class="card success">
-    <div class="badge">✓ ลงทะเบียนสำเร็จ</div>
+    <div class="badge" id="successBadge">✓ คุณเป็นสมาชิกแล้ว</div>
     <p style="margin:10px 0 0;">รหัสสมาชิกของคุณ</p>
     <div class="member-id" id="memberIdText">-</div>
-    <div class="qr">
+
+    <div class="member-card">
+      <div class="title">สิทธิพิเศษสมาชิก</div>
+      <div class="entitle" id="sampleEntitle">
+        <span id="sampleEntitleText">🎁 รับ Sample ฟรี</span>
+        <span class="count" id="sampleEntitleCount">1 สิทธิ์</span>
+      </div>
+    </div>
+
+    <div class="qr" id="qrBox">
       <img id="qrImg" src="" width="180" height="180" alt="QR Code" />
     </div>
-    <p class="hint">แสดงรหัสหรือ QR นี้ที่บูธ เพื่อรับของรางวัล</p>
+    <p class="hint" id="successHint">แสดงรหัสหรือ QR นี้ให้พนักงานที่บูธ เพื่อรับ Sample ฟรี</p>
   </div>
 </div>
 
@@ -204,7 +244,7 @@ async function main() {
     document.getElementById('loading').style.display = 'none';
 
     if (data.registered) {
-      showSuccess(data.memberId);
+      showSuccess(data.memberId, data.redeemStatus);
     } else {
       document.getElementById('formCard').style.display = 'block';
     }
@@ -214,12 +254,24 @@ async function main() {
   }
 }
 
-function showSuccess(memberId) {
+function showSuccess(memberId, redeemed) {
   document.getElementById('formCard').style.display = 'none';
   document.getElementById('successCard').style.display = 'block';
   document.getElementById('memberIdText').textContent = memberId;
-  document.getElementById('qrImg').src =
-    'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(memberId);
+
+  const entitle = document.getElementById('sampleEntitle');
+  if (redeemed) {
+    entitle.className = 'entitle used';
+    document.getElementById('sampleEntitleText').textContent = '✓ รับ Sample ไปแล้ว';
+    document.getElementById('sampleEntitleCount').textContent = 'ใช้สิทธิ์แล้ว';
+    document.getElementById('qrBox').style.display = 'none';
+    document.getElementById('successHint').textContent =
+      'คุณใช้สิทธิ์รับ Sample ในงานนี้ไปแล้ว — ขอบคุณที่ร่วมกิจกรรม แล้วพบกันงานหน้า!';
+  } else {
+    entitle.className = 'entitle avail';
+    document.getElementById('qrImg').src =
+      'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(memberId);
+  }
 }
 
 document.getElementById('regForm').addEventListener('submit', async function (e) {
@@ -262,12 +314,12 @@ document.getElementById('regForm').addEventListener('submit', async function (e)
     const data = await res.json();
 
     if (data.success) {
-      showSuccess(data.memberId);
+      showSuccess(data.memberId, false);
     } else {
       errBox.textContent = 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
       errBox.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'ลงทะเบียนรับของรางวัล';
+      btn.textContent = 'สมัครสมาชิก รับสิทธิ์ Sample ฟรี';
     }
   } catch (err) {
     errBox.textContent = 'เชื่อมต่อไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
