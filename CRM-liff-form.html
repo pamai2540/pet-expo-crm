@@ -274,6 +274,17 @@
     </div>
 
     <div class="member-card" style="text-align:left;">
+      <div class="title">📣 ติดตามโซเชียล รับสิทธิ์ลุ้นรางวัลเพิ่ม</div>
+      <p style="font-size:12.5px;color:var(--gray);margin:6px 0 4px;line-height:1.5;">
+        กดติดตามเพจ แล้วส่งชื่อบัญชีของคุณ + ภาพหน้าจอยืนยัน (1 แพลตฟอร์ม = 1 สิทธิ์เพิ่ม)
+      </p>
+      <p style="font-size:11.5px;color:#a35b00;background:#fff3e6;border-radius:8px;padding:8px;margin:0 0 6px;line-height:1.5;">
+        ⚠️ ทีมงานจะตรวจสอบสถานะการติดตามอีกครั้งในวันจับรางวัล หากยกเลิกติดตามก่อนวันจับรางวัล ถือว่าสละสิทธิ์
+      </p>
+      <div id="socialList"></div>
+    </div>
+
+    <div class="member-card" style="text-align:left;">
       <div class="title">🧾 ส่งบิลลุ้นรางวัล</div>
       <p style="font-size:12.5px;color:var(--gray);margin:6px 0 10px;line-height:1.5;">
         ถ่ายรูปบิล/ใบเสร็จการซื้อสินค้า (ในงานหรือนอกงานก็ได้) 1 ใบ = 1 สิทธิ์ลุ้นรางวัล
@@ -361,6 +372,7 @@ async function main() {
     document.getElementById('loading').style.display = 'none';
 
     if (data.registered) {
+      gSocialPlatforms = data.socialPlatforms || [];
       showSuccess(data.memberId, data.redeemStatus, data.sampleSku, data.receiptCount);
     } else {
       document.getElementById('formCard').style.display = 'block';
@@ -476,6 +488,81 @@ document.getElementById('receiptBtn').addEventListener('click', async () => {
 });
 
 let gMemberId = '', gSampleSku = '', gReceiptCount = 0;
+let gSocialPlatforms = [];
+
+// เพจโซเชียลของแบรนด์ — แก้ลิงก์ให้ตรงเพจจริงได้เลย
+const SOCIAL_PAGES = [
+  { id: 'facebook',  name: 'Facebook',  icon: '📘', url: 'https://www.facebook.com/kitchenflavorth' },
+  { id: 'instagram', name: 'Instagram', icon: '📸', url: 'https://www.instagram.com/kitchenflavorth' },
+  { id: 'tiktok',    name: 'TikTok',    icon: '🎵', url: 'https://www.tiktok.com/@kitchenflavorth' }
+];
+
+function renderSocial() {
+  const list = document.getElementById('socialList');
+  list.innerHTML = '';
+  SOCIAL_PAGES.forEach(p => {
+    const done = gSocialPlatforms.indexOf(p.id) !== -1;
+    const div = document.createElement('div');
+    div.style.cssText = 'margin-top:8px;padding:10px;background:#fffaf5;border-radius:10px;';
+    if (done) {
+      div.innerHTML = `<div style="font-size:13.5px;font-weight:700;">${p.icon} ${p.name} ` +
+        `<span style="color:#1a8a3a;font-size:12px;">✓ ส่งยืนยันแล้ว (รอตรวจสอบ)</span></div>`;
+    } else {
+      div.innerHTML =
+        `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">` +
+        `<span style="font-size:13.5px;font-weight:700;">${p.icon} ${p.name}</span>` +
+        `<a href="${p.url}" target="_blank" style="font-size:12px;font-weight:700;color:#fff;background:var(--brand);padding:6px 12px;border-radius:20px;text-decoration:none;">เปิดเพจ / กดติดตาม</a>` +
+        `</div>` +
+        `<input type="text" id="social-${p.id}-handle" placeholder="ชื่อบัญชี ${p.name} ของคุณ" style="margin-top:8px;font-size:13px;padding:10px;" />` +
+        `<label for="social-${p.id}-file" class="upload-area" style="margin-top:8px;padding:10px;font-size:12.5px;">📷 แนบภาพหน้าจอยืนยันการติดตาม<span id="social-${p.id}-info"></span></label>` +
+        `<input type="file" id="social-${p.id}-file" accept="image/*" style="display:none;" />` +
+        `<button type="button" id="social-${p.id}-btn" style="margin-top:8px;padding:10px;font-size:14px;">ส่งยืนยัน ${p.name}</button>` +
+        `<div id="social-${p.id}-status" class="hint" style="margin-top:4px;"></div>`;
+      list.appendChild(div);
+
+      div.querySelector(`#social-${p.id}-file`).addEventListener('change', (e) => {
+        const info = div.querySelector(`#social-${p.id}-info`);
+        info.textContent = e.target.files.length ? '✓ เลือกรูปแล้ว' : '';
+      });
+      div.querySelector(`#social-${p.id}-btn`).addEventListener('click', () => submitSocial(p, div));
+      return;
+    }
+    list.appendChild(div);
+  });
+}
+
+async function submitSocial(p, div) {
+  const handle = div.querySelector(`#social-${p.id}-handle`).value.trim();
+  const fileInput = div.querySelector(`#social-${p.id}-file`);
+  const statusBox = div.querySelector(`#social-${p.id}-status`);
+  const btn = div.querySelector(`#social-${p.id}-btn`);
+  if (!handle) { statusBox.textContent = 'กรุณากรอกชื่อบัญชีของคุณ'; return; }
+  if (!fileInput.files.length) { statusBox.textContent = 'กรุณาแนบภาพหน้าจอยืนยันการติดตาม'; return; }
+  btn.disabled = true;
+  btn.textContent = 'กำลังส่ง...';
+  try {
+    const imageBase64 = await resizeImageToBase64(fileInput.files[0], 1280);
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'submitSocial', lineUserId: profile.userId, platform: p.id, handle: handle, imageBase64: imageBase64, mimeType: 'image/jpeg' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      gSocialPlatforms = data.platforms || gSocialPlatforms.concat([p.id]);
+      renderSocial();
+    } else {
+      statusBox.textContent = 'ส่งไม่สำเร็จ กรุณาลองใหม่';
+      btn.disabled = false;
+      btn.textContent = 'ส่งยืนยัน ' + p.name;
+    }
+  } catch (err) {
+    statusBox.textContent = 'เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่';
+    btn.disabled = false;
+    btn.textContent = 'ส่งยืนยัน ' + p.name;
+    console.error(err);
+  }
+}
 
 document.getElementById('selfRedeemBtn').addEventListener('click', async () => {
   if (!confirm('ยืนยันว่าได้รับ Sample จากพนักงานแล้วใช่ไหม?\n\n⚠️ กดยืนยันได้ครั้งเดียวเท่านั้น สิทธิ์จะถูกใช้ทันที')) return;
@@ -509,6 +596,7 @@ function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
   gReceiptCount = receiptCount || 0;
   loadCampaigns();
   updateReceiptStatus(receiptCount || 0);
+  renderSocial();
 
   const entitle = document.getElementById('sampleEntitle');
   const chosen = sampleSku ? skuLabel(sampleSku) : '';
