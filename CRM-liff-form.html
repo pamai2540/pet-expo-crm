@@ -22,11 +22,11 @@
     background:var(--bg);
     color:var(--text);
   }
-  .wrap{max-width:480px;margin:0 auto;padding:20px 16px 40px;}
-  .header{text-align:center;margin-bottom:20px;}
+  .wrap{max-width:480px;margin:0 auto;padding:20px 16px 100px;}
+  .header{text-align:center;margin-bottom:16px;}
   .header h1{font-size:20px;margin:8px 0 4px;color:var(--brand-dark);}
   .header p{font-size:13px;color:var(--gray);margin:0;}
-  .brand-logo{width:130px;max-width:60%;height:auto;filter:drop-shadow(0 3px 8px rgba(176,28,16,.25));}
+  .brand-logo{width:120px;max-width:55%;height:auto;filter:drop-shadow(0 3px 8px rgba(176,28,16,.25));}
   .paw{font-size:17px;}
   .avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--brand);}
   .card{
@@ -37,13 +37,14 @@
   }
   label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px;}
   label .opt{font-weight:400;color:var(--gray);}
-  input[type=text], input[type=tel], select{
+  input[type=text], input[type=tel], select, textarea{
     width:100%;
     padding:12px;
     border:1px solid var(--border);
     border-radius:10px;
     font-size:15px;
     background:#fffaf5;
+    font-family:inherit;
   }
   .row2{display:flex;gap:10px;}
   .row2 > div{flex:1;}
@@ -71,10 +72,10 @@
     margin-top:18px;
     cursor:pointer;
   }
-  button:disabled{background:#f0c090;}
+  button:disabled{background:#e8b8b3;}
   .err{color:#d33;font-size:13px;margin-top:8px;display:none;}
   .loading{text-align:center;padding:60px 0;color:var(--gray);}
-  .success{display:none;text-align:center;}
+  .success{display:none;text-align:center;background:none;box-shadow:none;padding:0;}
   .success .qr{margin:16px auto;padding:12px;background:#fff;border-radius:14px;display:inline-block;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
   .member-id{
     font-size:24px;
@@ -151,9 +152,8 @@
   .sample-card.selected{
     border-color:var(--brand);
     background:#fff3e6;
-    box-shadow:0 0 0 2px rgba(255,122,0,.15);
+    box-shadow:0 0 0 2px rgba(221,42,27,.15);
   }
-  .sample-chosen{font-size:13px;color:var(--brand-dark);font-weight:600;margin-top:8px;}
   .upload-area{
     display:block;
     border:2px dashed var(--brand);
@@ -186,6 +186,7 @@
     padding:10px;
     background:#fffaf5;
     border-radius:10px;
+    text-align:left;
   }
   .reward-item .r-name{font-size:13.5px;font-weight:700;}
   .reward-item .r-detail{font-size:12px;color:var(--gray);margin-top:2px;line-height:1.4;}
@@ -207,6 +208,56 @@
     color:#fff;
     text-decoration:none;
   }
+  /* ---- เมนู & แท็บ ---- */
+  .tab{display:none;}
+  .tab.active{display:block;}
+  .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .menu-item{
+    background:linear-gradient(135deg,#fdf3dc,#fff);
+    border:1.5px solid var(--brand);
+    border-radius:14px;
+    padding:16px 10px;
+    text-align:center;
+    cursor:pointer;
+  }
+  .menu-item .mi-icon{font-size:30px;}
+  .menu-item .mi-label{font-size:12.5px;font-weight:700;color:var(--brand-dark);margin-top:6px;line-height:1.3;}
+  .bottom-nav{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    max-width:480px;
+    margin:0 auto;
+    background:#fff;
+    border-top:1px solid var(--border);
+    display:none;
+    justify-content:space-around;
+    padding:6px 0 10px;
+    box-shadow:0 -2px 10px rgba(0,0,0,.06);
+    z-index:50;
+  }
+  .nav-item{
+    text-align:center;
+    font-size:10.5px;
+    color:var(--gray);
+    cursor:pointer;
+    padding:4px 6px;
+    border-radius:10px;
+    min-width:56px;
+  }
+  .nav-item .ni-icon{font-size:20px;display:block;}
+  .nav-item.active{color:var(--brand-dark);font-weight:700;background:#fdf3dc;}
+  .prize-banner{
+    margin-top:14px;
+    padding:12px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+    border-radius:14px;
+    color:#fff;
+    font-size:12.5px;
+    line-height:1.6;
+    text-align:left;
+  }
+  .prize-banner b{color:var(--cream);}
+  .tab-title{font-size:17px;font-weight:800;color:var(--brand-dark);margin:14px 0 0;text-align:left;}
 </style>
 </head>
 <body>
@@ -220,6 +271,7 @@
 
   <div id="loading" class="loading">กำลังเชื่อมต่อ LINE...</div>
 
+  <!-- ================= ฟอร์มสมัครสมาชิก ================= -->
   <div id="formCard" class="card" style="display:none;">
     <div class="header" style="margin-bottom:0;">
       <img id="avatar" class="avatar" src="" alt="" />
@@ -239,9 +291,22 @@
           <select id="petType">
             <option value="สุนัข">สุนัข</option>
             <option value="แมว">แมว</option>
+            <option value="สุนัขและแมว">เลี้ยงทั้งสุนัขและแมว</option>
             <option value="อื่นๆ">อื่นๆ</option>
           </select>
         </div>
+        <div>
+          <label>จำนวนสัตว์เลี้ยง</label>
+          <select id="petCount">
+            <option value="1 ตัว">1 ตัว</option>
+            <option value="2 ตัว">2 ตัว</option>
+            <option value="3 ตัว">3 ตัว</option>
+            <option value="4 ตัวขึ้นไป">4 ตัวขึ้นไป</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row2">
         <div>
           <label>ช่วงอายุ <span class="opt">(ไม่บังคับ)</span></label>
           <select id="petAge">
@@ -252,10 +317,11 @@
             <option value="7 ปีขึ้นไป">7 ปีขึ้นไป</option>
           </select>
         </div>
+        <div>
+          <label>สายพันธุ์ <span class="opt">(ไม่บังคับ)</span></label>
+          <input type="text" id="petBreed" placeholder="เช่น พุดเดิ้ล, เปอร์เซีย" />
+        </div>
       </div>
-
-      <label>สายพันธุ์ <span class="opt">(ไม่บังคับ)</span></label>
-      <input type="text" id="petBreed" placeholder="เช่น พุดเดิ้ล, เปอร์เซีย" />
 
       <label>ปัจจุบันให้อาหารแบรนด์อะไร <span class="opt">(ไม่บังคับ)</span></label>
       <input type="text" id="currentBrand" placeholder="เช่น Royal Canin, ยังไม่แน่ใจ" />
@@ -287,93 +353,187 @@
     </form>
   </div>
 
+  <!-- ================= หน้าสมาชิก (5 แท็บ) ================= -->
   <div id="successCard" class="card success">
-    <div class="badge" id="successBadge">✓ คุณเป็นสมาชิกแล้ว</div>
-    <p style="margin:10px 0 0;">รหัสสมาชิกของคุณ</p>
-    <div class="member-id" id="memberIdText">-</div>
 
-    <div class="points-box">
-      <div style="font-size:12px;color:var(--gray);">แต้มสะสมของคุณ</div>
-      <div class="points-num"><span id="pointsText">0</span> แต้ม</div>
-    </div>
-
-    <div class="member-card" style="text-align:left;">
-      <div class="title">🎟️ กรอกโค้ดรับแต้ม</div>
-      <p style="font-size:12.5px;color:var(--gray);margin:6px 0 8px;">ได้รับโค้ดจากกิจกรรมในงาน/แคมเปญ? กรอกที่นี่เพื่อรับแต้มสะสม</p>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="pointCode" placeholder="เช่น PETEXPO100" style="flex:1;text-transform:uppercase;" />
-        <button type="button" id="codeBtn" style="width:auto;margin:0;padding:12px 16px;">รับแต้ม</button>
+    <!-- ---------- แท็บ: หน้าหลัก ---------- -->
+    <div class="tab active" id="tab-home">
+      <div class="points-box">
+        <div style="font-size:12px;">แต้มสะสมของคุณ</div>
+        <div class="points-num"><span id="pointsText">0</span> แต้ม</div>
       </div>
-      <div id="codeStatus" class="hint" style="margin-top:6px;"></div>
-    </div>
 
-    <div class="member-card" style="text-align:left;">
-      <div class="title">🎁 แลกของรางวัลด้วยแต้ม</div>
-      <div id="rewardList"><p class="hint">กำลังโหลด...</p></div>
-    </div>
-
-    <div class="member-card" id="promoBox" style="display:none;text-align:left;">
-      <div class="title">💸 ส่วนลดพิเศษสมาชิก</div>
-      <div id="promoList"></div>
-    </div>
-
-    <div class="member-card">
-      <div class="title">🐾 สิทธิพิเศษสมาชิก</div>
-      <div class="entitle" id="sampleEntitle">
-        <span id="sampleEntitleText">🎁 รับ Sample ฟรี</span>
-        <span class="count" id="sampleEntitleCount">1 สิทธิ์</span>
+      <div class="member-card" style="text-align:left;">
+        <div class="title">🎟️ กรอกโค้ดรับแต้ม</div>
+        <p style="font-size:12.5px;color:var(--gray);margin:6px 0 8px;">ได้รับโค้ดจากกิจกรรมในงาน/แคมเปญ? กรอกที่นี่เพื่อรับแต้มสะสม</p>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="pointCode" placeholder="เช่น PETEXPO100" style="flex:1;text-transform:uppercase;" />
+          <button type="button" id="codeBtn" style="width:auto;margin:0;padding:12px 16px;">รับแต้ม</button>
+        </div>
+        <div id="codeStatus" class="hint" style="margin-top:6px;"></div>
       </div>
-      <button type="button" id="selfRedeemBtn" style="display:none;background:#1a8a3a;margin-top:12px;">
-        ✅ กดยืนยันรับ Sample แล้ว
-      </button>
-      <p class="hint" id="selfRedeemHint" style="display:none;margin-top:6px;">
-        ⚠️ กดได้ครั้งเดียว — ให้กดตอนรับ Sample จากพนักงานที่บูธเท่านั้น
-      </p>
+
+      <div class="menu-grid">
+        <div class="menu-item" data-goto="tab-member">
+          <div class="mi-icon">👤</div>
+          <div class="mi-label">ข้อมูลสมาชิก<br>แลกของรางวัล</div>
+        </div>
+        <div class="menu-item" data-goto="tab-act">
+          <div class="mi-icon">🎉</div>
+          <div class="mi-label">ร่วมกิจกรรม<br>ในตอนนี้</div>
+        </div>
+        <div class="menu-item" data-goto="tab-expo">
+          <div class="mi-icon">🎪</div>
+          <div class="mi-label">งาน Pet Expo<br>รับ Sample ฟรี</div>
+        </div>
+        <div class="menu-item" data-goto="tab-receipt">
+          <div class="mi-icon">🧾</div>
+          <div class="mi-label">แนบใบเสร็จ<br>รับ Reward</div>
+        </div>
+      </div>
+
+      <div class="member-card" id="promoBox" style="display:none;text-align:left;">
+        <div class="title">💸 ส่วนลดพิเศษสมาชิก</div>
+        <div id="promoList"></div>
+      </div>
+
+      <div class="member-card" style="text-align:left;">
+        <div class="title">🥣 สูตรแนะนำสำหรับสัตว์เลี้ยงของคุณ</div>
+        <div id="recommendList"></div>
+        <div style="font-size:12.5px;font-weight:700;margin-top:12px;">🛒 ช่องทางสั่งซื้อ</div>
+        <div class="shop-links" id="shopLinks"></div>
+      </div>
     </div>
 
-    <div class="qr" id="qrBox">
-      <img id="qrImg" src="" width="180" height="180" alt="QR Code" />
-    </div>
-    <p class="hint" id="successHint">แสดงรหัสหรือ QR นี้ให้พนักงานที่บูธ เพื่อรับ Sample ฟรี</p>
+    <!-- ---------- แท็บ: ข้อมูลสมาชิก ---------- -->
+    <div class="tab" id="tab-member">
+      <div class="badge" id="successBadge">✓ คุณเป็นสมาชิกแล้ว</div>
+      <p style="margin:10px 0 0;">รหัสสมาชิกของคุณ</p>
+      <div class="member-id" id="memberIdText">-</div>
 
-    <div class="member-card" id="campaignBox" style="display:none;text-align:left;">
-      <div class="title">📅 กิจกรรมในช่วงนี้</div>
-      <div id="campaignList"></div>
-    </div>
+      <div class="qr" id="qrBox">
+        <img id="qrImg" src="" width="180" height="180" alt="QR Code" />
+      </div>
+      <p class="hint">แสดงรหัสหรือ QR นี้กับพนักงาน เพื่อยืนยันตัวตนสมาชิก</p>
 
-    <div class="member-card" style="text-align:left;">
-      <div class="title">📣 ติดตามโซเชียล รับสิทธิ์ลุ้นรางวัลเพิ่ม</div>
-      <p style="font-size:12.5px;color:var(--gray);margin:6px 0 4px;line-height:1.5;">
-        กดติดตามเพจ แล้วส่งชื่อบัญชีของคุณ + ภาพหน้าจอยืนยัน (1 แพลตฟอร์ม = 1 สิทธิ์เพิ่ม)
-      </p>
-      <p style="font-size:11.5px;color:#a35b00;background:#fff3e6;border-radius:8px;padding:8px;margin:0 0 6px;line-height:1.5;">
-        ⚠️ ทีมงานจะตรวจสอบสถานะการติดตามอีกครั้งในวันจับรางวัล หากยกเลิกติดตามก่อนวันจับรางวัล ถือว่าสละสิทธิ์
-      </p>
-      <div id="socialList"></div>
-    </div>
+      <div class="member-card" style="text-align:left;">
+        <div class="title">🎁 แลกของรางวัลด้วยแต้ม</div>
+        <div id="rewardList"><p class="hint">กำลังโหลด...</p></div>
+      </div>
 
-    <div class="member-card" style="text-align:left;">
-      <div class="title">🧾 ส่งบิลลุ้นรางวัล</div>
-      <p style="font-size:12.5px;color:var(--gray);margin:6px 0 10px;line-height:1.5;">
-        ถ่ายรูปบิล/ใบเสร็จการซื้อสินค้า (ในงานหรือนอกงานก็ได้) 1 ใบ = 1 สิทธิ์ลุ้นรางวัล
-      </p>
-      <label for="receiptFile" class="upload-area">
-        📷 กดที่นี่เพื่อถ่ายรูป/แนบใบเสร็จ
-        <span>เลือกได้หลายใบพร้อมกัน</span>
-      </label>
-      <input type="file" id="receiptFile" accept="image/*" multiple style="display:none;" />
-      <div id="receiptFileInfo" class="hint" style="margin-top:8px;display:none;"></div>
-      <button type="button" id="receiptBtn" style="margin-top:10px;display:none;">ส่งบิลลุ้นรางวัล</button>
-      <div id="receiptStatus" class="hint" style="margin-top:8px;"></div>
+      <div class="member-card" style="text-align:left;">
+        <div class="title">📦 ของรางวัลที่แลกแล้ว</div>
+        <p style="font-size:12px;color:var(--gray);margin:6px 0 4px;">เมื่อได้รับของแล้ว กด "ยืนยันรับของ" ต่อหน้าพนักงาน/ผู้จัดส่ง</p>
+        <div id="myRewardList"></div>
+      </div>
     </div>
 
-    <div class="member-card" style="text-align:left;">
-      <div class="title">🥣 สูตรแนะนำสำหรับสัตว์เลี้ยงของคุณ</div>
-      <div id="recommendList"></div>
-      <div style="font-size:12.5px;font-weight:700;margin-top:12px;">🛒 ช่องทางสั่งซื้อ</div>
-      <div class="shop-links" id="shopLinks"></div>
+    <!-- ---------- แท็บ: ร่วมกิจกรรม ---------- -->
+    <div class="tab" id="tab-act">
+      <div class="tab-title">🎉 ร่วมกิจกรรมในตอนนี้</div>
+
+      <div class="prize-banner">
+        🏆 <b>ประกาศรางวัลหลังจบงาน Pet Expo 1 รอบ</b><br>
+        • อาหารถุงใหญ่ 8-10 กก. จำนวน <b>3 รางวัล</b><br>
+        • ขนาด 1.5 กก. จำนวน <b>10 รางวัล</b> (เลือกสูตรได้)<br>
+        ร่วมได้ทั้งกิจกรรมกดติดตามและส่งบิลลุ้นรางวัล ประกาศผลทาง LINE OA
+      </div>
+
+      <div class="member-card" id="campaignBox" style="display:none;text-align:left;">
+        <div class="title">📅 กิจกรรม/แคมเปญที่เปิดอยู่</div>
+        <div id="campaignList"></div>
+      </div>
+
+      <div class="member-card" style="text-align:left;">
+        <div class="title">📣 กิจกรรมที่ 1: กดติดตาม รับ Sample ในงาน + ลุ้นถุงใหญ่</div>
+        <p style="font-size:12.5px;color:var(--gray);margin:6px 0 4px;line-height:1.5;">
+          กดติดตาม Facebook / TikTok / Shopee แล้วส่งชื่อบัญชีของคุณ + ภาพหน้าจอยืนยัน (1 แพลตฟอร์ม = 1 สิทธิ์)
+        </p>
+        <p style="font-size:11.5px;color:#a35b00;background:#fff3e6;border-radius:8px;padding:8px;margin:0 0 6px;line-height:1.5;">
+          ⚠️ ทีมงานจะตรวจสอบสถานะการติดตามอีกครั้งในวันจับรางวัล หากยกเลิกติดตามก่อนวันจับรางวัล ถือว่าสละสิทธิ์
+        </p>
+        <div id="socialList"></div>
+      </div>
+
+      <div class="member-card" style="text-align:left;">
+        <div class="title">💬 กิจกรรมที่ 2: แชร์ความคิดเห็นถึง Kitchen Flavor รับ Sample ฟรี</div>
+        <div id="feedbackFormBox">
+          <p style="font-size:12.5px;color:var(--gray);margin:6px 0 4px;line-height:1.5;">
+            บอกเราหน่อยว่าคิดยังไงกับแบรนด์/สินค้า Kitchen Flavor แล้วรับ Sample ฟรีที่บูธในงาน
+          </p>
+          <input type="text" id="fbName" placeholder="ชื่อของคุณ" style="margin-top:8px;" />
+          <input type="tel" id="fbPhone" placeholder="เบอร์โทรศัพท์" style="margin-top:8px;" />
+          <input type="text" id="fbBreed" placeholder="สายพันธุ์ของน้อง เช่น พุดเดิ้ล, เปอร์เซีย" style="margin-top:8px;" />
+          <textarea id="fbComment" rows="3" placeholder="ความคิดเห็นถึงแบรนด์ Kitchen Flavor..." style="margin-top:8px;"></textarea>
+          <button type="button" id="fbBtn" style="margin-top:10px;">ส่งความคิดเห็น รับ Sample ฟรี</button>
+          <div id="fbStatus" class="hint" style="margin-top:6px;"></div>
+        </div>
+        <div id="feedbackDoneBox" style="display:none;">
+          <p style="font-size:13px;color:#1a8a3a;font-weight:700;margin:8px 0 0;">✓ ส่งความคิดเห็นแล้ว ขอบคุณครับ!</p>
+          <p class="hint">แสดงหน้านี้กับพนักงานที่บูธ เพื่อรับ Sample ฟรีในงาน</p>
+        </div>
+      </div>
     </div>
+
+    <!-- ---------- แท็บ: งาน Pet Expo ---------- -->
+    <div class="tab" id="tab-expo">
+      <div class="tab-title">🎪 งาน Pet Expo</div>
+
+      <div class="member-card">
+        <div class="title">🐾 สิทธิ์รับ Sample ฟรีในงาน</div>
+        <div class="entitle" id="sampleEntitle">
+          <span id="sampleEntitleText">🎁 รับ Sample ฟรี</span>
+          <span class="count" id="sampleEntitleCount">1 สิทธิ์</span>
+        </div>
+        <button type="button" id="selfRedeemBtn" style="display:none;background:#1a8a3a;margin-top:12px;">
+          ✅ กดยืนยันรับ Sample แล้ว
+        </button>
+        <p class="hint" id="selfRedeemHint" style="display:none;margin-top:6px;">
+          ⚠️ กดได้ครั้งเดียว — ให้กดตอนรับ Sample จากพนักงานที่บูธเท่านั้น
+        </p>
+        <p class="hint" id="successHint">แจ้งรหัสสมาชิก <b id="expoMemberId">-</b> หรือแสดง QR ในเมนู "สมาชิก" กับพนักงานที่บูธ</p>
+      </div>
+
+      <div class="prize-banner">
+        💡 <b>กิจกรรมในงาน:</b> ร่วมกิจกรรมที่บูธรับ "โค้ดรับแต้ม" แล้วนำไปกรอกที่หน้าหลัก เพื่อสะสมแต้มแลกของรางวัล
+      </div>
+    </div>
+
+    <!-- ---------- แท็บ: แนบใบเสร็จ ---------- -->
+    <div class="tab" id="tab-receipt">
+      <div class="tab-title">🧾 แนบใบเสร็จรับ Reward</div>
+
+      <div class="prize-banner">
+        🏆 ส่งบิล 1 ใบ = 1 สิทธิ์ลุ้นรางวัลหลังจบงาน Pet Expo<br>
+        • ถุงใหญ่ 8-10 กก. <b>3 รางวัล</b> • 1.5 กก. <b>10 รางวัล</b> (เลือกสูตรได้)
+      </div>
+
+      <div class="member-card" style="text-align:left;">
+        <div class="title">🧾 ส่งบิล/ใบเสร็จ</div>
+        <p style="font-size:12.5px;color:var(--gray);margin:6px 0 10px;line-height:1.5;">
+          ถ่ายรูปบิล/ใบเสร็จการซื้อสินค้า Kitchen Flavor (ในงานหรือนอกงานก็ได้)
+        </p>
+        <label for="receiptFile" class="upload-area">
+          📷 กดที่นี่เพื่อถ่ายรูป/แนบใบเสร็จ
+          <span>เลือกได้หลายใบพร้อมกัน</span>
+        </label>
+        <input type="file" id="receiptFile" accept="image/*" multiple style="display:none;" />
+        <div id="receiptFileInfo" class="hint" style="margin-top:8px;display:none;"></div>
+        <button type="button" id="receiptBtn" style="margin-top:10px;display:none;">ส่งบิลลุ้นรางวัล</button>
+        <div id="receiptStatus" class="hint" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
   </div>
+</div>
+
+<!-- ---------- เมนูล่าง ---------- -->
+<div class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" data-goto="tab-home"><span class="ni-icon">🏠</span>หน้าหลัก</div>
+  <div class="nav-item" data-goto="tab-member"><span class="ni-icon">👤</span>สมาชิก</div>
+  <div class="nav-item" data-goto="tab-act"><span class="ni-icon">🎉</span>กิจกรรม</div>
+  <div class="nav-item" data-goto="tab-expo"><span class="ni-icon">🎪</span>Pet Expo</div>
+  <div class="nav-item" data-goto="tab-receipt"><span class="ni-icon">🧾</span>ใบเสร็จ</div>
 </div>
 
 <script>
@@ -382,7 +542,6 @@ const LIFF_ID = '2010692180-fwE1YuAv';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyCcfCV0ol0ake6TCnCOSg_veEG3-Aq6MXxYgCexbntpOlww5cOPiBbX2jFjTajuB_n/exec';
 
 // รายการ Sample (SKU) — แก้ชื่อ/จุดเด่นให้ตรงสินค้าจริงได้เลย
-// pet: 'สุนัข' | 'แมว' | 'all' (แสดงเฉพาะเมื่อลูกค้าเลือกประเภทสัตว์เลี้ยงตรงกัน)
 const SAMPLES = [
   // สายแมว — GRAIN FREE / SPECIAL CARE
   { sku: 'BC15', name: 'Beauty Cat (ทุกช่วงวัย)',          pet: 'แมว',  desc: 'บำรุงเส้นขนแน่นนุ่มเงางาม โครงสร้างตัวแน่น ต้านอนุมูลอิสระ เสริมภูมิคุ้มกัน' },
@@ -395,11 +554,42 @@ const SAMPLES = [
   { sku: 'PD15', name: 'Puppy ลูกสุนัขพันธุ์เล็ก (3 เดือนขึ้นไป)', pet: 'สุนัข', desc: 'เม็ดเล็ก เคี้ยวง่าย ย่อยง่าย เสริมพัฒนาการสมองและระบบประสาท' },
   { sku: 'BD10', name: 'Beauty Dog พันธุ์กลาง-ใหญ่ (ทุกช่วงวัย)', pet: 'สุนัข', desc: 'บำรุงขนและผิวหนัง เสริมความแข็งแรงของรากขนและร่างกาย' }
 ];
+
+// ช่องทางสั่งซื้อ — แก้ลิงก์ให้ตรงร้านจริงได้เลย
+const SHOP_LINKS = [
+  { name: 'Shopee',      color: '#ee4d2d', url: 'https://shopee.co.th/kitchenflavor_thailand' },
+  { name: 'Lazada',      color: '#0f156d', url: 'https://www.lazada.co.th/shop/kitchen-flavor' },
+  { name: 'TikTok Shop', color: '#000000', url: 'https://www.tiktok.com/@kitchenflavorth' }
+];
+
+// เพจ/ร้านที่ให้กดติดตาม — แก้ลิงก์ให้ตรงของจริงได้เลย
+const SOCIAL_PAGES = [
+  { id: 'facebook', name: 'Facebook', icon: '📘', url: 'https://www.facebook.com/kitchenflavorth' },
+  { id: 'tiktok',   name: 'TikTok',   icon: '🎵', url: 'https://www.tiktok.com/@kitchenflavorth' },
+  { id: 'shopee',   name: 'Shopee',   icon: '🛒', url: 'https://shopee.co.th/kitchenflavor_thailand' }
+];
 // ==========================================
 
 let profile = null;
 let selectedSku = '';
+let gMemberId = '', gSampleSku = '', gReceiptCount = 0;
+let gSocialPlatforms = [];
+let gPoints = 0;
+let gMyRewards = [];
+let gFeedbackDone = false;
 
+// ---------- แท็บ ----------
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n =>
+    n.classList.toggle('active', n.getAttribute('data-goto') === id));
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('[data-goto]').forEach(el =>
+  el.addEventListener('click', () => showTab(el.getAttribute('data-goto'))));
+
+// ---------- ฟอร์มสมัคร ----------
 function skuLabel(sku) {
   const s = SAMPLES.find(x => x.sku === sku);
   return s ? s.name : sku;
@@ -408,8 +598,8 @@ function skuLabel(sku) {
 function renderSamples() {
   const petType = document.getElementById('petType').value;
   const list = document.getElementById('sampleList');
-  const items = SAMPLES.filter(s => s.pet === 'all' || s.pet === petType);
-  const visible = items.length ? items : SAMPLES; // ประเภท "อื่นๆ" หรือไม่มีรายการตรง → แสดงทั้งหมด
+  const items = SAMPLES.filter(s => s.pet === petType);
+  const visible = items.length ? items : SAMPLES; // "สุนัขและแมว"/"อื่นๆ" → แสดงทั้งหมด
 
   list.innerHTML = '';
   if (!visible.some(s => s.sku === selectedSku)) selectedSku = '';
@@ -419,7 +609,7 @@ function renderSamples() {
     label.className = 'sample-card' + (s.sku === selectedSku ? ' selected' : '');
     label.innerHTML =
       `<input type="radio" name="sampleSku" value="${s.sku}" ${s.sku === selectedSku ? 'checked' : ''}/>` +
-      `<span class="sku-name">${s.name}</span><span class="sku-tag">สำหรับ${s.pet === 'all' ? 'ทุกตัว' : s.pet}</span>` +
+      `<span class="sku-name">${s.name}</span><span class="sku-tag">สำหรับ${s.pet}</span>` +
       `<div class="sku-desc">${s.desc}</div>`;
     label.addEventListener('click', () => {
       selectedSku = s.sku;
@@ -440,7 +630,6 @@ async function main() {
     document.getElementById('avatar').src = profile.pictureUrl || '';
     document.getElementById('displayName').textContent = 'สวัสดีคุณ ' + profile.displayName;
 
-    // เช็คว่าเคยลงทะเบียนแล้วหรือยัง
     const res = await fetch(GAS_URL + '?action=checkUser&uid=' + encodeURIComponent(profile.userId));
     const data = await res.json();
 
@@ -449,6 +638,8 @@ async function main() {
     if (data.registered) {
       gSocialPlatforms = data.socialPlatforms || [];
       gPoints = Number(data.points) || 0;
+      gMyRewards = data.myRewards || [];
+      gFeedbackDone = !!data.feedbackDone;
       showSuccess(data.memberId, data.redeemStatus, data.sampleSku, data.receiptCount);
     } else {
       document.getElementById('formCard').style.display = 'block';
@@ -461,6 +652,7 @@ async function main() {
   }
 }
 
+// ---------- กิจกรรม/แคมเปญ ----------
 async function loadCampaigns() {
   try {
     const res = await fetch(GAS_URL + '?action=campaigns');
@@ -481,6 +673,7 @@ async function loadCampaigns() {
   } catch (err) { console.error(err); }
 }
 
+// ---------- ใบเสร็จ ----------
 function updateReceiptStatus(count) {
   document.getElementById('receiptStatus').textContent =
     count > 0 ? `✓ ส่งบิลแล้ว ${count} ใบ = ${count} สิทธิ์ลุ้นรางวัล` : '';
@@ -508,7 +701,7 @@ document.getElementById('receiptFile').addEventListener('change', () => {
   const files = document.getElementById('receiptFile').files;
   const info = document.getElementById('receiptFileInfo');
   const btn = document.getElementById('receiptBtn');
-  const area = document.querySelector('.upload-area');
+  const area = document.querySelector('#tab-receipt .upload-area');
   if (files.length) {
     info.textContent = `เลือกแล้ว ${files.length} รูป — กดปุ่ม "ส่งบิลลุ้นรางวัล" ด้านล่างเพื่อยืนยัน`;
     info.style.display = 'block';
@@ -549,7 +742,7 @@ document.getElementById('receiptBtn').addEventListener('click', async () => {
     }
     fileInput.value = '';
     document.getElementById('receiptFileInfo').style.display = 'none';
-    document.querySelector('.upload-area').classList.remove('has-files');
+    document.querySelector('#tab-receipt .upload-area').classList.remove('has-files');
     btn.style.display = 'none';
     updateReceiptStatus(lastCount);
   } catch (err) {
@@ -563,22 +756,11 @@ document.getElementById('receiptBtn').addEventListener('click', async () => {
   }
 });
 
-let gMemberId = '', gSampleSku = '', gReceiptCount = 0;
-let gSocialPlatforms = [];
-
-let gPoints = 0;
-
-// ช่องทางสั่งซื้อ — แก้ลิงก์ให้ตรงร้านจริงได้เลย
-const SHOP_LINKS = [
-  { name: 'Shopee',      color: '#ee4d2d', url: 'https://shopee.co.th/kitchenflavor_thailand' },
-  { name: 'Lazada',      color: '#0f156d', url: 'https://www.lazada.co.th/shop/kitchen-flavor' },
-  { name: 'TikTok Shop', color: '#000000', url: 'https://www.tiktok.com/@kitchenflavorth' }
-];
-
+// ---------- แต้ม & โค้ด ----------
 function setPoints(points) {
   gPoints = Number(points) || 0;
   document.getElementById('pointsText').textContent = gPoints.toLocaleString();
-  loadRewards(); // ปุ่มแลกเปิด/ปิดตามแต้มปัจจุบัน
+  loadRewards();
 }
 
 document.getElementById('codeBtn').addEventListener('click', async () => {
@@ -608,6 +790,7 @@ document.getElementById('codeBtn').addEventListener('click', async () => {
   }
 });
 
+// ---------- ของรางวัล ----------
 async function loadRewards() {
   const list = document.getElementById('rewardList');
   try {
@@ -640,7 +823,9 @@ async function redeemReward(r) {
     const res = await fetch(GAS_URL + '?action=redeemReward&uid=' + encodeURIComponent(profile.userId) + '&rewardId=' + encodeURIComponent(r.id));
     const data = await res.json();
     if (data.success) {
-      alert(`🎉 แลก "${data.rewardName}" สำเร็จ!\n\nทีมงานจะติดต่อกลับ หรือแสดงหน้านี้กับเจ้าหน้าที่เพื่อรับของรางวัล`);
+      alert(`🎉 แลก "${data.rewardName}" สำเร็จ!\n\nดูรายการใน "ของรางวัลที่แลกแล้ว" — เมื่อได้รับของ กดยืนยันรับของต่อหน้าพนักงาน`);
+      gMyRewards = data.myRewards || gMyRewards;
+      renderMyRewards();
       setPoints(data.points);
     } else {
       alert(data.message || 'แลกไม่สำเร็จ กรุณาลองใหม่');
@@ -651,6 +836,44 @@ async function redeemReward(r) {
   }
 }
 
+function renderMyRewards() {
+  const box = document.getElementById('myRewardList');
+  box.innerHTML = '';
+  if (!gMyRewards.length) {
+    box.innerHTML = '<p class="hint">ยังไม่มีประวัติการแลกของรางวัล</p>';
+    return;
+  }
+  gMyRewards.forEach(r => {
+    const pending = r.status === 'รอรับของรางวัล';
+    const div = document.createElement('div');
+    div.className = 'reward-item';
+    div.innerHTML =
+      `<div><div class="r-name">${r.name}</div>` +
+      `<div class="r-detail">${r.date} • ใช้ ${r.cost.toLocaleString()} แต้ม<br>${pending ? '🟠 รอรับของรางวัล' : '✅ รับของแล้ว'}</div></div>` +
+      (pending ? `<button type="button" style="background:#1a8a3a;">ยืนยันรับของ</button>` : '');
+    if (pending) div.querySelector('button').addEventListener('click', () => confirmReward(r));
+    box.appendChild(div);
+  });
+}
+
+async function confirmReward(r) {
+  if (!confirm(`ยืนยันว่าได้รับ "${r.name}" แล้วใช่ไหม?\n\n⚠️ กดยืนยันต่อหน้าพนักงาน/เมื่อได้รับของแล้วเท่านั้น กดได้ครั้งเดียว`)) return;
+  try {
+    const res = await fetch(GAS_URL + '?action=confirmReward&uid=' + encodeURIComponent(profile.userId) + '&redemptionId=' + encodeURIComponent(r.redemptionId));
+    const data = await res.json();
+    if (data.success) {
+      gMyRewards = data.myRewards || gMyRewards;
+      renderMyRewards();
+    } else {
+      alert(data.message || 'ไม่สำเร็จ กรุณาลองใหม่');
+    }
+  } catch (err) {
+    alert('เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่');
+    console.error(err);
+  }
+}
+
+// ---------- ส่วนลด ----------
 async function loadPromotions() {
   try {
     const res = await fetch(GAS_URL + '?action=promotions');
@@ -672,6 +895,7 @@ async function loadPromotions() {
   } catch (err) { console.error(err); }
 }
 
+// ---------- สูตรแนะนำ + ร้านค้า ----------
 function renderRecommendAndShops() {
   const rec = document.getElementById('recommendList');
   rec.innerHTML = '';
@@ -700,13 +924,7 @@ function renderRecommendAndShops() {
   });
 }
 
-// เพจโซเชียลของแบรนด์ — แก้ลิงก์ให้ตรงเพจจริงได้เลย
-const SOCIAL_PAGES = [
-  { id: 'facebook',  name: 'Facebook',  icon: '📘', url: 'https://www.facebook.com/kitchenflavorth' },
-  { id: 'instagram', name: 'Instagram', icon: '📸', url: 'https://www.instagram.com/kitchenflavorth' },
-  { id: 'tiktok',    name: 'TikTok',    icon: '🎵', url: 'https://www.tiktok.com/@kitchenflavorth' }
-];
-
+// ---------- ภารกิจติดตามโซเชียล ----------
 function renderSocial() {
   const list = document.getElementById('socialList');
   list.innerHTML = '';
@@ -717,27 +935,26 @@ function renderSocial() {
     if (done) {
       div.innerHTML = `<div style="font-size:13.5px;font-weight:700;">${p.icon} ${p.name} ` +
         `<span style="color:#1a8a3a;font-size:12px;">✓ ส่งยืนยันแล้ว (รอตรวจสอบ)</span></div>`;
-    } else {
-      div.innerHTML =
-        `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">` +
-        `<span style="font-size:13.5px;font-weight:700;">${p.icon} ${p.name}</span>` +
-        `<a href="${p.url}" target="_blank" style="font-size:12px;font-weight:700;color:#fff;background:var(--brand);padding:6px 12px;border-radius:20px;text-decoration:none;">เปิดเพจ / กดติดตาม</a>` +
-        `</div>` +
-        `<input type="text" id="social-${p.id}-handle" placeholder="ชื่อบัญชี ${p.name} ของคุณ" style="margin-top:8px;font-size:13px;padding:10px;" />` +
-        `<label for="social-${p.id}-file" class="upload-area" style="margin-top:8px;padding:10px;font-size:12.5px;">📷 แนบภาพหน้าจอยืนยันการติดตาม<span id="social-${p.id}-info"></span></label>` +
-        `<input type="file" id="social-${p.id}-file" accept="image/*" style="display:none;" />` +
-        `<button type="button" id="social-${p.id}-btn" style="margin-top:8px;padding:10px;font-size:14px;">ส่งยืนยัน ${p.name}</button>` +
-        `<div id="social-${p.id}-status" class="hint" style="margin-top:4px;"></div>`;
       list.appendChild(div);
-
-      div.querySelector(`#social-${p.id}-file`).addEventListener('change', (e) => {
-        const info = div.querySelector(`#social-${p.id}-info`);
-        info.textContent = e.target.files.length ? '✓ เลือกรูปแล้ว' : '';
-      });
-      div.querySelector(`#social-${p.id}-btn`).addEventListener('click', () => submitSocial(p, div));
       return;
     }
+    div.innerHTML =
+      `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">` +
+      `<span style="font-size:13.5px;font-weight:700;">${p.icon} ${p.name}</span>` +
+      `<a href="${p.url}" target="_blank" style="font-size:12px;font-weight:700;color:#fff;background:var(--brand);padding:6px 12px;border-radius:20px;text-decoration:none;">เปิดเพจ / กดติดตาม</a>` +
+      `</div>` +
+      `<input type="text" id="social-${p.id}-handle" placeholder="ชื่อบัญชี ${p.name} ของคุณ" style="margin-top:8px;font-size:13px;padding:10px;" />` +
+      `<label for="social-${p.id}-file" class="upload-area" style="margin-top:8px;padding:10px;font-size:12.5px;">📷 แนบภาพหน้าจอยืนยันการติดตาม<span id="social-${p.id}-info"></span></label>` +
+      `<input type="file" id="social-${p.id}-file" accept="image/*" style="display:none;" />` +
+      `<button type="button" id="social-${p.id}-btn" style="margin-top:8px;padding:10px;font-size:14px;">ส่งยืนยัน ${p.name}</button>` +
+      `<div id="social-${p.id}-status" class="hint" style="margin-top:4px;"></div>`;
     list.appendChild(div);
+
+    div.querySelector(`#social-${p.id}-file`).addEventListener('change', (e) => {
+      const info = div.querySelector(`#social-${p.id}-info`);
+      info.textContent = e.target.files.length ? '✓ เลือกรูปแล้ว' : '';
+    });
+    div.querySelector(`#social-${p.id}-btn`).addEventListener('click', () => submitSocial(p, div));
   });
 }
 
@@ -774,6 +991,50 @@ async function submitSocial(p, div) {
   }
 }
 
+// ---------- ความคิดเห็นถึงแบรนด์ ----------
+function renderFeedback() {
+  document.getElementById('feedbackFormBox').style.display = gFeedbackDone ? 'none' : 'block';
+  document.getElementById('feedbackDoneBox').style.display = gFeedbackDone ? 'block' : 'none';
+}
+
+document.getElementById('fbBtn').addEventListener('click', async () => {
+  const name = document.getElementById('fbName').value.trim();
+  const phone = document.getElementById('fbPhone').value.trim();
+  const breed = document.getElementById('fbBreed').value.trim();
+  const comment = document.getElementById('fbComment').value.trim();
+  const statusBox = document.getElementById('fbStatus');
+  const btn = document.getElementById('fbBtn');
+  if (!name || !phone) { statusBox.textContent = 'กรุณากรอกชื่อและเบอร์โทรศัพท์'; return; }
+  if (!comment) { statusBox.textContent = 'กรุณาเขียนความคิดเห็นถึงแบรนด์'; return; }
+  btn.disabled = true;
+  btn.textContent = 'กำลังส่ง...';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'submitFeedback', lineUserId: profile.userId, name: name, phone: phone, petBreed: breed, comment: comment })
+    });
+    const data = await res.json();
+    if (data.success) {
+      gFeedbackDone = true;
+      renderFeedback();
+    } else if (data.error === 'already submitted') {
+      gFeedbackDone = true;
+      renderFeedback();
+    } else {
+      statusBox.textContent = 'ส่งไม่สำเร็จ กรุณาลองใหม่';
+      btn.disabled = false;
+      btn.textContent = 'ส่งความคิดเห็น รับ Sample ฟรี';
+    }
+  } catch (err) {
+    statusBox.textContent = 'เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่';
+    btn.disabled = false;
+    btn.textContent = 'ส่งความคิดเห็น รับ Sample ฟรี';
+    console.error(err);
+  }
+});
+
+// ---------- ยืนยันรับ Sample (Pet Expo) ----------
 document.getElementById('selfRedeemBtn').addEventListener('click', async () => {
   if (!confirm('ยืนยันว่าได้รับ Sample จากพนักงานแล้วใช่ไหม?\n\n⚠️ กดยืนยันได้ครั้งเดียวเท่านั้น สิทธิ์จะถูกใช้ทันที')) return;
   const btn = document.getElementById('selfRedeemBtn');
@@ -783,7 +1044,7 @@ document.getElementById('selfRedeemBtn').addEventListener('click', async () => {
     const res = await fetch(GAS_URL + '?action=selfRedeem&uid=' + encodeURIComponent(profile.userId));
     const data = await res.json();
     if (data.success) {
-      showSuccess(gMemberId, true, gSampleSku, gReceiptCount);
+      renderSampleEntitle(true);
     } else {
       alert(data.message || 'ไม่สำเร็จ กรุณาลองใหม่');
       btn.disabled = false;
@@ -797,22 +1058,9 @@ document.getElementById('selfRedeemBtn').addEventListener('click', async () => {
   }
 });
 
-function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
-  document.getElementById('formCard').style.display = 'none';
-  document.getElementById('successCard').style.display = 'block';
-  document.getElementById('memberIdText').textContent = memberId;
-  gMemberId = memberId;
-  gSampleSku = sampleSku || '';
-  gReceiptCount = receiptCount || 0;
-  loadCampaigns();
-  updateReceiptStatus(receiptCount || 0);
-  renderSocial();
-  loadPromotions();
-  renderRecommendAndShops();
-  setPoints(gPoints);
-
+function renderSampleEntitle(redeemed) {
   const entitle = document.getElementById('sampleEntitle');
-  const chosen = sampleSku ? skuLabel(sampleSku) : '';
+  const chosen = gSampleSku ? skuLabel(gSampleSku) : '';
   if (redeemed) {
     entitle.className = 'entitle used';
     document.getElementById('sampleEntitleText').textContent =
@@ -820,7 +1068,6 @@ function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
     document.getElementById('sampleEntitleCount').textContent = 'ใช้สิทธิ์แล้ว';
     document.getElementById('selfRedeemBtn').style.display = 'none';
     document.getElementById('selfRedeemHint').style.display = 'none';
-    document.getElementById('qrBox').style.display = 'none';
     document.getElementById('successHint').textContent =
       'คุณใช้สิทธิ์รับ Sample ในงานนี้ไปแล้ว — ขอบคุณที่ร่วมกิจกรรม แล้วพบกันงานหน้า!';
   } else {
@@ -829,11 +1076,35 @@ function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
       '🎁 รับ Sample ฟรี' + (chosen ? ': ' + chosen : '');
     document.getElementById('selfRedeemBtn').style.display = 'block';
     document.getElementById('selfRedeemHint').style.display = 'block';
-    document.getElementById('qrImg').src =
-      'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(memberId);
   }
 }
 
+// ---------- แสดงหน้าสมาชิก ----------
+function showSuccess(memberId, redeemed, sampleSku, receiptCount) {
+  document.getElementById('formCard').style.display = 'none';
+  document.getElementById('successCard').style.display = 'block';
+  document.getElementById('bottomNav').style.display = 'flex';
+  document.getElementById('memberIdText').textContent = memberId;
+  document.getElementById('expoMemberId').textContent = memberId;
+  gMemberId = memberId;
+  gSampleSku = sampleSku || '';
+  gReceiptCount = receiptCount || 0;
+  document.getElementById('qrImg').src =
+    'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(memberId);
+
+  renderSampleEntitle(!!redeemed);
+  loadCampaigns();
+  updateReceiptStatus(receiptCount || 0);
+  renderSocial();
+  renderFeedback();
+  renderMyRewards();
+  loadPromotions();
+  renderRecommendAndShops();
+  setPoints(gPoints);
+  showTab('tab-home');
+}
+
+// ---------- สมัครสมาชิก ----------
 document.getElementById('regForm').addEventListener('submit', async function (e) {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
@@ -859,6 +1130,7 @@ document.getElementById('regForm').addEventListener('submit', async function (e)
     fullName: document.getElementById('fullName').value.trim(),
     phone: document.getElementById('phone').value.trim(),
     petType: document.getElementById('petType').value,
+    petCount: document.getElementById('petCount').value,
     petBreed: document.getElementById('petBreed').value.trim(),
     petAge: document.getElementById('petAge').value,
     currentBrand: document.getElementById('currentBrand').value.trim(),
@@ -881,7 +1153,7 @@ document.getElementById('regForm').addEventListener('submit', async function (e)
     const data = await res.json();
 
     if (data.success) {
-      showSuccess(data.memberId, false, selectedSku);
+      showSuccess(data.memberId, false, selectedSku, 0);
     } else {
       errBox.textContent = 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
       errBox.style.display = 'block';
@@ -892,7 +1164,7 @@ document.getElementById('regForm').addEventListener('submit', async function (e)
     errBox.textContent = 'เชื่อมต่อไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
     errBox.style.display = 'block';
     btn.disabled = false;
-    btn.textContent = 'ลงทะเบียนรับของรางวัล';
+    btn.textContent = 'สมัครสมาชิก รับสิทธิ์ Sample ฟรี';
     console.error(err);
   }
 });
