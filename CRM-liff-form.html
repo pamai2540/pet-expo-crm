@@ -7,12 +7,13 @@
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   :root{
-    --brand:#ff7a00;
-    --brand-dark:#e05e00;
-    --bg:#fff8f0;
+    --brand:#dd2a1b;        /* แดง Kitchen Flavor */
+    --brand-dark:#b01c10;
+    --cream:#f4dfa1;        /* ครีมเหลืองจากโลโก้ */
+    --bg:#fff6e9;
     --text:#2b2b2b;
     --gray:#8a8a8a;
-    --border:#eee0d0;
+    --border:#eeddc4;
   }
   *{box-sizing:border-box;}
   body{
@@ -23,8 +24,10 @@
   }
   .wrap{max-width:480px;margin:0 auto;padding:20px 16px 40px;}
   .header{text-align:center;margin-bottom:20px;}
-  .header h1{font-size:20px;margin:8px 0 4px;}
+  .header h1{font-size:20px;margin:8px 0 4px;color:var(--brand-dark);}
   .header p{font-size:13px;color:var(--gray);margin:0;}
+  .brand-logo{width:130px;max-width:60%;height:auto;filter:drop-shadow(0 3px 8px rgba(176,28,16,.25));}
+  .paw{font-size:17px;}
   .avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--brand);}
   .card{
     background:#fff;
@@ -92,7 +95,7 @@
     margin-top:6px;
   }
   .member-card{
-    background:linear-gradient(135deg,#fff4e8,#fff);
+    background:linear-gradient(135deg,#fdf3dc,#fff);
     border:1.5px solid var(--brand);
     border-radius:14px;
     padding:14px;
@@ -138,7 +141,7 @@
     font-size:11px;
     font-weight:700;
     color:var(--brand-dark);
-    background:#ffe9d4;
+    background:var(--cream);
     border-radius:20px;
     padding:2px 8px;
     margin-left:6px;
@@ -172,7 +175,7 @@
     border-radius:14px;
     color:#fff;
   }
-  .points-box div:first-child{color:#ffe4c8 !important;}
+  .points-box div:first-child{color:var(--cream) !important;}
   .points-num{font-size:30px;font-weight:800;letter-spacing:1px;}
   .reward-item{
     display:flex;
@@ -210,8 +213,9 @@
 
 <div class="wrap">
   <div class="header">
-    <h1>🐾 Kitchen Flavor Member</h1>
-    <p>สมัครฟรี สะสมแต้มแลกของรางวัล รับส่วนลดและสิทธิพิเศษ</p>
+    <img src="logo-kf.png" alt="Kitchen Flavor" class="brand-logo" />
+    <h1>Kitchen Flavor Member <span class="paw">🐶🐱</span></h1>
+    <p>อาหารน้องหมาน้องแมวคุณภาพ 🍲 สะสมแต้มแลกของรางวัล รับส่วนลดและสิทธิพิเศษ</p>
   </div>
 
   <div id="loading" class="loading">กำลังเชื่อมต่อ LINE...</div>
@@ -314,7 +318,7 @@
     </div>
 
     <div class="member-card">
-      <div class="title">สิทธิพิเศษสมาชิก</div>
+      <div class="title">🐾 สิทธิพิเศษสมาชิก</div>
       <div class="entitle" id="sampleEntitle">
         <span id="sampleEntitleText">🎁 รับ Sample ฟรี</span>
         <span class="count" id="sampleEntitleCount">1 สิทธิ์</span>
